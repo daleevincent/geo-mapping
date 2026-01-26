@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GoogleMapView from "./GoogleMapView";
 import TreeMapping from "./TreeMapping";
 import FarmModal from "./FarmModal";
-import { FARMS_DATA } from "../assets/utils/farmsData";
 import { BATANGAS_CITIES } from "../assets/utils/batangasCities";
 import { BARANGAYS } from "../assets/utils/barangays";
 import type { Farm, Coordinates } from "../assets/utils/types";
+import api from "../services/api"; // API service to fetch farms
 import "../styles/dashboard.css";
 import { GiCoffeeBeans } from "react-icons/gi";
 import { FaFilter } from "react-icons/fa";
@@ -16,6 +16,9 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
+  const [farms, setFarms] = useState<Farm[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
   const [showFarmModal, setShowFarmModal] = useState<Farm | null>(null);
   const [filters, setFilters] = useState({
@@ -25,50 +28,58 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
     coordinates: "",
   });
 
-  const [mapCenter, setMapCenter] = useState<Coordinates>({
-    lat: 13.9,
-    lng: 121.1,
-  });
+  const [mapCenter, setMapCenter] = useState<Coordinates>({ lat: 13.9, lng: 121.1 });
   const [mapZoom, setMapZoom] = useState(10);
 
   /* =========================
-     FILTER LOGIC (UNCHANGED)
+     FETCH FARMS FROM BACKEND
      ========================= */
-  const filteredFarms = FARMS_DATA.filter((farm) => {
+  useEffect(() => {
+    const fetchFarms = async () => {
+      try {
+        const res = await api.get<Farm[]>("/farms");
+        setFarms(res.data);
+      } catch (err) {
+        console.error("Failed to fetch farms:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFarms();
+  }, []);
+
+  /* =========================
+     FILTER LOGIC
+     ========================= */
+  const filteredFarms = farms.filter((farm) => {
     if (filters.city && farm.cityName !== filters.city) return false;
-    if (filters.barangay && farm.barangayName !== filters.barangay)
-      return false;
+    if (filters.barangay && farm.barangayName !== filters.barangay) return false;
     if (filters.dnaStatus === "verified" && !farm.hasDnaVerified) return false;
     if (filters.dnaStatus === "unverified" && farm.hasDnaVerified) return false;
     if (
       filters.coordinates &&
-      !`${farm.coordinates.lat},${farm.coordinates.lng}`.includes(
-        filters.coordinates,
-      )
+      !`${farm.coordinates.lat},${farm.coordinates.lng}`.includes(filters.coordinates)
     )
       return false;
     return true;
   });
 
   /* =========================
-     STATS (UNCHANGED)
+     STATS
      ========================= */
   const stats = {
     totalFarms: filteredFarms.length,
     totalTrees: filteredFarms.reduce((sum, f) => sum + f.totalTrees, 0),
-    dnaVerifiedTrees: filteredFarms.reduce(
-      (sum, f) => sum + f.dnaVerifiedCount,
-      0,
-    ),
+    dnaVerifiedTrees: filteredFarms.reduce((sum, f) => sum + f.dnaVerifiedCount, 0),
     cities: [...new Set(filteredFarms.map((f) => f.cityName))].length,
   };
 
   /* =========================
-     HANDLERS (UNCHANGED)
+     HANDLERS
      ========================= */
   const handleCityFilter = (cityName: string) => {
     setFilters({ ...filters, city: cityName, barangay: "" });
-
     if (!cityName) return;
 
     const city = BATANGAS_CITIES.find((c) => c.name === cityName);
@@ -79,12 +90,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
   };
 
   const handleResetFilters = () => {
-    setFilters({
-      city: "",
-      barangay: "",
-      dnaStatus: "",
-      coordinates: "",
-    });
+    setFilters({ city: "", barangay: "", dnaStatus: "", coordinates: "" });
     setMapCenter({ lat: 13.9, lng: 121.1 });
     setMapZoom(10);
   };
@@ -99,6 +105,8 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
       setShowFarmModal(null);
     }
   };
+
+  if (loading) return <p>Loading farms...</p>;
 
   return (
     <div className="dashboard-container">
@@ -116,10 +124,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
 
         <button
           className="admin-login-btn"
-          onClick={() => {
-            // call the handler passed from App.tsx
-            if (onAdminLoginClick) onAdminLoginClick();
-          }}
+          onClick={() => onAdminLoginClick?.()}
         >
           Admin Login
         </button>
@@ -138,26 +143,10 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
 
             <div className="stats-container">
               {[
-                {
-                  label: "Total Farms",
-                  value: stats.totalFarms,
-                  color: "#4a7c2c",
-                },
-                {
-                  label: "Total Liberica Trees",
-                  value: stats.totalTrees,
-                  color: "#6b9b47",
-                },
-                {
-                  label: "DNA Verified",
-                  value: stats.dnaVerifiedTrees,
-                  color: "#2196F3",
-                },
-                {
-                  label: "Cities/Municipality Covered",
-                  value: stats.cities,
-                  color: "#757575",
-                },
+                { label: "Total Farms", value: stats.totalFarms, color: "#4a7c2c" },
+                { label: "Total Liberica Trees", value: stats.totalTrees, color: "#6b9b47" },
+                { label: "DNA Verified", value: stats.dnaVerifiedTrees, color: "#2196F3" },
+                { label: "Cities/Municipality Covered", value: stats.cities, color: "#757575" },
               ].map((stat, i) => (
                 <div
                   key={i}
@@ -186,10 +175,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
             <div className="filters-grid">
               <div className="filter-item">
                 <label>City / Municipality</label>
-                <select
-                  value={filters.city}
-                  onChange={(e) => handleCityFilter(e.target.value)}
-                >
+                <select value={filters.city} onChange={(e) => handleCityFilter(e.target.value)}>
                   <option value="">All</option>
                   {BATANGAS_CITIES.map((city) => (
                     <option key={city.id} value={city.name}>
@@ -204,9 +190,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
                 <select
                   value={filters.barangay}
                   disabled={!filters.city}
-                  onChange={(e) =>
-                    setFilters({ ...filters, barangay: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, barangay: e.target.value })}
                 >
                   <option value="">All Barangays</option>
                   {filters.city &&
@@ -222,9 +206,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
                 <label>DNA Status</label>
                 <select
                   value={filters.dnaStatus}
-                  onChange={(e) =>
-                    setFilters({ ...filters, dnaStatus: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, dnaStatus: e.target.value })}
                 >
                   <option value="">All Status</option>
                   <option value="verified">DNA Verified</option>
@@ -238,9 +220,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
                   type="text"
                   placeholder="13.9411, 121.1624"
                   value={filters.coordinates}
-                  onChange={(e) =>
-                    setFilters({ ...filters, coordinates: e.target.value })
-                  }
+                  onChange={(e) => setFilters({ ...filters, coordinates: e.target.value })}
                 />
               </div>
             </div>
@@ -250,10 +230,7 @@ const Dashboard = ({ onAdminLoginClick }: DashboardProps) => {
         {/* ========== RIGHT COLUMN (MAP / TREE) ========== */}
         <main className="dashboard-map">
           {selectedFarm ? (
-            <TreeMapping
-              farm={selectedFarm}
-              onBack={() => setSelectedFarm(null)}
-            />
+            <TreeMapping farm={selectedFarm} onBack={() => setSelectedFarm(null)} />
           ) : (
             <>
               <GoogleMapView
