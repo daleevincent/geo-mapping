@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/login.css";
+import "../styles/adminLogin.css";
 
 interface LoginProps {
   onLogin: () => void;
@@ -24,7 +24,7 @@ const Login = ({ onLogin }: LoginProps) => {
       <div className="login-card">
         <div className="login-logo">🌿</div>
         <h2>Liberica Farm System</h2>
-        <p>Batangas Geo-Mapping</p>
+        <p>Admin Login</p>
 
         {error && <div className="error-message">{error}</div>}
 

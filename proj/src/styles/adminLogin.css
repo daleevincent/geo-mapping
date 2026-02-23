@@ -37,8 +37,9 @@
 }
 
 .login-card p {
+  font-weight: 500;
   color: #666;
-  font-size: 14px;
+  font-size: 15px;
   margin-top: -15px;
   margin-bottom: 30px;
 }

@@ -1,63 +1,49 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
+import { useState } from "react";
+import AdminFarms from "./AdminFarms";
+import AdminTrees from "./AdminTrees";
 import type { Farm } from "../assets/utils/types";
+import "../styles/admin.css";
+import { GiCoffeeBeans } from "react-icons/gi";
 
-const AdminDashboard = () => {
-  const [farms, setFarms] = useState<Farm[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchFarms = async () => {
-      try {
-        const res = await api.get<Farm[]>("/admin/farms");
-        setFarms(res.data);
-      } catch (err) {
-        console.error("Failed to load farms", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+interface DashboardProps {
+  userId: number; // current admin/owner ID
+  onLogout: () => void; // return to main dashboard
+}
 
-    fetchFarms();
-  }, []);
-
-  if (loading) return <p>Loading dashboard...</p>;
-
-  const totalTrees = farms.reduce((sum, f) => sum + f.totalTrees, 0);
-  const dnaVerified = farms.reduce((sum, f) => sum + f.dnaVerifiedCount, 0);
+const AdminDashboard = ({ userId, onLogout }: DashboardProps) => {
+  const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
 
   return (
-    <div className="admin-page">
-      <h2>Admin Dashboard</h2>
+    <div className="admin-container">
+      {/* HEADER */}
+      <header className="admin-header">
+        <div className="admin-title">
+          <GiCoffeeBeans className="admin-icon" />
+          <div className="title-text">
+              <h1>Liberica Farm Mapping</h1>
+              <p>Admin Dashboard</p>
+            </div>
+        </div>
+        <button className="btn-logout" onClick={onLogout}>
+          Logout
+        </button>
+      </header>
 
-      <div className="admin-stats">
-        <div className="card">Total Farms: {farms.length}</div>
-        <div className="card">Total Trees: {totalTrees}</div>
-        <div className="card">DNA Verified Trees: {dnaVerified}</div>
-      </div>
-
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Farm</th>
-            <th>City</th>
-            <th>Barangay</th>
-            <th>Total Trees</th>
-            <th>DNA Verified</th>
-          </tr>
-        </thead>
-        <tbody>
-          {farms.map(farm => (
-            <tr key={farm.id}>
-              <td>{farm.name}</td>
-              <td>{farm.cityName}</td>
-              <td>{farm.barangayName}</td>
-              <td>{farm.totalTrees}</td>
-              <td>{farm.dnaVerifiedCount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* MAIN CONTENT */}
+      <main className="admin-main">
+        {!selectedFarm ? (
+          <AdminFarms
+            userId={userId}
+            onSelectFarm={(farm) => setSelectedFarm(farm)}
+          />
+        ) : (
+          <AdminTrees
+            farm={selectedFarm}
+            onBack={() => setSelectedFarm(null)}
+          />
+        )}
+      </main>
     </div>
   );
 };

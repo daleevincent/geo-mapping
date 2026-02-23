@@ -1,0 +1,135 @@
+.admin-container {
+  min-height: 100vh;
+  height: 100vh; 
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.admin-main {
+  flex: 5;
+  display: flex;
+  padding: 20px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #2d5016, #4a7c2c);
+  color: #ffffff;
+  padding: 16px 28px;
+}
+
+.admin-title {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.admin-title h1 {
+  color: white;
+  font-size: 30px;
+  font-weight: 600;
+  margin: 0;
+}
+.admin-title p {
+  margin-top: -10px;
+  font-size: 15px;
+  opacity: 0.9;
+  color: white;
+}
+
+.admin-icon {
+  font-size: 35px;
+  color: #ffffff;
+}
+
+.btn-logout {
+  background: #e63946;
+  color: #fff;
+  border: 1px solid #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.btn-logout:hover {
+  background: #c5303f;
+}
+  
+
+
+.admin-farms, .admin-trees-wrapper {
+  flex: 1;
+  background-color: white;
+  padding: 20px;
+  border-radius: 6px;
+}
+
+.admin-trees-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.btn-back, .btn-add {
+  border-radius: 6px;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-add {
+  background-color: #4a7c2c;
+  color: white;
+}
+
+.admin-trees-content {
+  display: flex;
+  gap: 1rem;
+  height: 500px; /* MUST be fixed height for map to render */
+}
+
+.admin-trees-map {
+  flex: 1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.admin-tree-map {
+  width: 100%;
+  height: 100%;
+}
+
+.admin-trees-table-wrapper {
+  flex: 1 1 40%;
+  overflow-y: auto;
+}
+
+.admin-tree-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-tree-table th,
+.admin-tree-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.admin-tree-table th {
+  background-color: #f4f4f4;
+}
+
+.admin-trees-table button {
+  margin: 0 2px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+

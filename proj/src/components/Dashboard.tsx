@@ -5,7 +5,7 @@ import FarmModal from "./FarmModal";
 import { BATANGAS_CITIES } from "../assets/utils/batangasCities";
 import { BARANGAYS } from "../assets/utils/barangays";
 import type { Farm, Coordinates } from "../assets/utils/types";
-import api from "../services/api"; // API service to fetch farms
+import api from "../services/api"; 
 import "../styles/dashboard.css";
 import { GiCoffeeBeans } from "react-icons/gi";
 import { FaFilter } from "react-icons/fa";
